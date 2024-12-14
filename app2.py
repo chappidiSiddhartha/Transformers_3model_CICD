@@ -1,6 +1,8 @@
 
 import streamlit as st
-from transformers import pipeline
+from transformers import pipeline, AutoModelForSequenceClassification, AutoTokenizer
+import torch
+import os
 
 # Set the title of the app
 st.title('Hugging Face Transformers with Streamlit')
@@ -14,10 +16,22 @@ model_type = st.sidebar.selectbox(
 # Load the appropriate model based on the selected task
 if model_type == "Sentiment Analysis":
     model = pipeline("sentiment-analysis")
+    model_name = "distilbert-base-uncased-finetuned-sst-2-english"  # Specify the model name for sentiment analysis
 elif model_type == "Text Generation":
     model = pipeline("text-generation")
+    model_name = "gpt2"  # Specify the model name for text generation
 elif model_type == "Named Entity Recognition":
     model = pipeline("ner")
+    model_name = "dbmdz/bert-large-cased-finetuned-conll03-english"  # Specify the model name for NER
+
+# Save the model to a directory
+model_dir = 'outputs/models/'
+os.makedirs(model_dir, exist_ok=True)
+
+# Save the model and tokenizer
+model.model.save_pretrained(model_dir)  # Save the model weights
+tokenizer = AutoTokenizer.from_pretrained(model_name)  # Load tokenizer using the model name
+tokenizer.save_pretrained(model_dir)  # Save the tokenizer
 
 # Display the task selected
 st.write(f"### Selected Task: {model_type}")
@@ -58,3 +72,4 @@ st.markdown(
     This app is powered by [Hugging Face Transformers](https://huggingface.co/transformers/) and [Streamlit](https://streamlit.io/).
     """
 )
+
